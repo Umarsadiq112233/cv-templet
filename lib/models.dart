@@ -1,4 +1,7 @@
+enum CVTemplate { classic, modern, professional }
+
 class CVData {
+  final String id;
   final String name;
   final String jobTitle;
   final String profileSummary;
@@ -10,8 +13,12 @@ class CVData {
   final List<Experience> workExperience;
   final List<Experience> internshipExperience;
   final String reference;
+  final String imagePath;
+  final DateTime lastModified;
+  final CVTemplate template;
 
   CVData({
+    required this.id,
     required this.name,
     required this.jobTitle,
     required this.profileSummary,
@@ -23,7 +30,107 @@ class CVData {
     required this.workExperience,
     required this.internshipExperience,
     required this.reference,
+    this.imagePath = 'assets/images/profile.jpg',
+    required this.lastModified,
+    this.template = CVTemplate.classic,
   });
+
+  factory CVData.empty({String? id}) => CVData(
+    id: id ?? '',
+    name: '',
+    jobTitle: '',
+    profileSummary: '',
+    contact: ContactInfo.empty(),
+    education: [],
+    skills: [],
+    languages: [],
+    hobbies: [],
+    workExperience: [],
+    internshipExperience: [],
+    reference: '',
+    imagePath: 'assets/images/profile.jpg',
+    lastModified: DateTime.now(),
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'jobTitle': jobTitle,
+    'profileSummary': profileSummary,
+    'contact': contact.toJson(),
+    'education': education.map((e) => e.toJson()).toList(),
+    'skills': skills,
+    'languages': languages,
+    'hobbies': hobbies,
+    'workExperience': workExperience.map((e) => e.toJson()).toList(),
+    'internshipExperience': internshipExperience
+        .map((e) => e.toJson())
+        .toList(),
+    'reference': reference,
+    'imagePath': imagePath,
+    'lastModified': lastModified.toIso8601String(),
+    'template': template.index,
+  };
+
+  factory CVData.fromJson(Map<String, dynamic> json) => CVData(
+    id: json['id'],
+    name: json['name'],
+    jobTitle: json['jobTitle'],
+    profileSummary: json['profileSummary'],
+    contact: ContactInfo.fromJson(json['contact']),
+    education: (json['education'] as List)
+        .map((e) => Education.fromJson(e))
+        .toList(),
+    skills: List<String>.from(json['skills']),
+    languages: List<String>.from(json['languages']),
+    hobbies: List<String>.from(json['hobbies']),
+    workExperience: (json['workExperience'] as List)
+        .map((e) => Experience.fromJson(e))
+        .toList(),
+    internshipExperience: (json['internshipExperience'] as List)
+        .map((e) => Experience.fromJson(e))
+        .toList(),
+    reference: json['reference'],
+    imagePath: json['imagePath'] ?? 'assets/images/profile.jpg',
+    lastModified: DateTime.parse(json['lastModified']),
+    template: CVTemplate.values[json['template'] ?? 0],
+  );
+
+  CVData copyWith({
+    String? id,
+    String? name,
+    String? jobTitle,
+    String? profileSummary,
+    ContactInfo? contact,
+    List<Education>? education,
+    List<String>? skills,
+    List<String>? languages,
+    List<String>? hobbies,
+    List<Experience>? workExperience,
+    List<Experience>? internshipExperience,
+    String? reference,
+    String? imagePath,
+    DateTime? lastModified,
+    CVTemplate? template,
+  }) {
+    return CVData(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      jobTitle: jobTitle ?? this.jobTitle,
+      profileSummary: profileSummary ?? this.profileSummary,
+      contact: contact ?? this.contact,
+      education: education ?? this.education,
+      skills: skills ?? this.skills,
+      languages: languages ?? this.languages,
+      hobbies: hobbies ?? this.hobbies,
+      workExperience: workExperience ?? this.workExperience,
+      internshipExperience: internshipExperience ?? this.internshipExperience,
+      reference: reference ?? this.reference,
+      imagePath: imagePath ?? this.imagePath,
+      lastModified: lastModified ?? this.lastModified,
+      template: template ?? this.template,
+    );
+  }
 }
 
 class ContactInfo {
@@ -36,6 +143,21 @@ class ContactInfo {
     required this.email,
     required this.location,
   });
+
+  factory ContactInfo.empty() =>
+      ContactInfo(phone: '', email: '', location: '');
+
+  Map<String, dynamic> toJson() => {
+    'phone': phone,
+    'email': email,
+    'location': location,
+  };
+
+  factory ContactInfo.fromJson(Map<String, dynamic> json) => ContactInfo(
+    phone: json['phone'] ?? '',
+    email: json['email'] ?? '',
+    location: json['location'] ?? '',
+  );
 }
 
 class Education {
@@ -50,6 +172,23 @@ class Education {
     required this.degree,
     this.score,
   });
+
+  factory Education.empty() =>
+      Education(period: '', institution: '', degree: '');
+
+  Map<String, dynamic> toJson() => {
+    'period': period,
+    'institution': institution,
+    'degree': degree,
+    'score': score,
+  };
+
+  factory Education.fromJson(Map<String, dynamic> json) => Education(
+    period: json['period'] ?? '',
+    institution: json['institution'] ?? '',
+    degree: json['degree'] ?? '',
+    score: json['score'],
+  );
 }
 
 class Experience {
@@ -66,9 +205,29 @@ class Experience {
     required this.period,
     required this.points,
   });
+
+  factory Experience.empty() =>
+      Experience(title: '', company: '', period: '', points: []);
+
+  Map<String, dynamic> toJson() => {
+    'title': title,
+    'company': company,
+    'location': location,
+    'period': period,
+    'points': points,
+  };
+
+  factory Experience.fromJson(Map<String, dynamic> json) => Experience(
+    title: json['title'] ?? '',
+    company: json['company'] ?? '',
+    location: json['location'],
+    period: json['period'] ?? '',
+    points: List<String>.from(json['points'] ?? []),
+  );
 }
 
 final sampleCVData = CVData(
+  id: 'sample-id',
   name: 'UMAR SADIQ',
   jobTitle: 'MOBILE APP DEVELOPER',
   profileSummary:
@@ -78,6 +237,7 @@ final sampleCVData = CVData(
     email: 'umarsadiq27041501@gmail.com',
     location: 'Pakistan Islamabad',
   ),
+  lastModified: DateTime.now(),
   education: [
     Education(
       period: '2021 – 2025',
@@ -164,4 +324,5 @@ final sampleCVData = CVData(
     ),
   ],
   reference: 'References will be provided on demand.',
+  imagePath: 'assets/images/profile.jpg',
 );

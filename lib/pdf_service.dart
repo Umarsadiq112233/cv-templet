@@ -16,11 +16,13 @@ class PDFService {
     // Load profile photo
     pw.ImageProvider? profileImage;
     try {
-      final imageBytes = await rootBundle.load('assets/images/profile.jpg');
+      final imagePath = data.imagePath.startsWith('assets/')
+          ? data.imagePath
+          : 'assets/images/profile.jpg';
+      final imageBytes = await rootBundle.load(imagePath);
       profileImage = pw.MemoryImage(imageBytes.buffer.asUint8List());
     } catch (e) {
       debugPrint('Error loading profile image for PDF: $e');
-      // Fallback if image fails to load
     }
 
     // Use Page instead of MultiPage to ensure single-page output
@@ -237,23 +239,38 @@ class PDFService {
                           pw.RichText(
                             text: pw.TextSpan(
                               children: [
-                                pw.TextSpan(
-                                  text: 'UMAR ',
-                                  style: pw.TextStyle(
-                                    font: fontOswald,
-                                    fontSize: 36,
-                                    color: PdfColor.fromInt(0xFF2C3E50),
-                                  ),
-                                ),
-                                pw.TextSpan(
-                                  text: 'SADIQ',
-                                  style: pw.TextStyle(
-                                    font: fontOswald,
-                                    fontSize: 36,
-                                    fontWeight: pw.FontWeight.normal,
-                                    color: PdfColor.fromInt(0xFF2C3E50),
-                                  ),
-                                ),
+                                () {
+                                  final names = data.name.trim().split(' ');
+                                  if (names.isEmpty)
+                                    return pw.TextSpan(text: '');
+                                  final firstName = names.first;
+                                  final lastName = names.length > 1
+                                      ? names.sublist(1).join(' ')
+                                      : '';
+
+                                  return pw.TextSpan(
+                                    children: [
+                                      pw.TextSpan(
+                                        text: '$firstName ',
+                                        style: pw.TextStyle(
+                                          font: fontOswald,
+                                          fontSize: 36,
+                                          color: PdfColor.fromInt(0xFF2C3E50),
+                                        ),
+                                      ),
+                                      if (lastName.isNotEmpty)
+                                        pw.TextSpan(
+                                          text: lastName,
+                                          style: pw.TextStyle(
+                                            font: fontOswald,
+                                            fontSize: 36,
+                                            fontWeight: pw.FontWeight.normal,
+                                            color: PdfColor.fromInt(0xFF2C3E50),
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                }(),
                               ],
                             ),
                           ),
